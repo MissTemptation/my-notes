@@ -80,14 +80,20 @@
 
     <div class="modal-overlay" id="modalOverlay" onclick="closeCategoryModal()"></div>
     <div class="modal" id="categoryModal">
-        <h3 style="margin-bottom: 12px; color: var(--accent-color);">Create New Folder</h3>
+        <h3 style="margin-bottom: 12px; color: var(--accent-color);">Folders Manager</h3>
         <label style="font-size: 0.9rem; font-weight: 600;">Folder Name:</label>
         <input type="text" id="newCategoryName" class="input-field" placeholder="e.g., Lyrics, Ideas...">
         <label style="font-size: 0.9rem; font-weight: 600;">Folder Color Theme:</label>
         <input type="color" id="newCategoryColor" class="input-field" value="#8c7863" style="height:44px; padding:2px; cursor:pointer;">
+        
         <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px;">
             <button class="btn" onclick="closeCategoryModal()">Cancel</button>
             <button class="btn btn-save" onclick="saveNewCategory()">Add Folder</button>
+        </div>
+
+        <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 12px;">
+            <h4 style="font-size: 0.9rem; margin-bottom: 8px; color: #666;">Delete Custom Folders:</h4>
+            <div id="modalFolderList" style="max-height: 120px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;"></div>
         </div>
     </div>
 
@@ -95,9 +101,7 @@
         let notes = JSON.parse(localStorage.getItem('my_notes_data')) || [];
         let categories = JSON.parse(localStorage.getItem('my_notes_categories')) || [
             { id: 'all', name: 'All Notes', color: '#8c7863' },
-            { id: 'unfiled', name: 'General', color: '#a3907c' },
-            { id: 'lyrics', name: 'Lyrics 🎵', color: '#2e7d32' },
-            { id: 'thoughts', name: 'Random Thoughts', color: '#1565c0' }
+            { id: 'unfiled', name: 'General', color: '#a3907c' }
         ];
         let activeCategory = 'all', currentNoteId = null;
 
@@ -183,13 +187,44 @@
             else { navigator.clipboard.writeText(`${title}\n\n${text}`); alert('Copied note to clipboard!'); }
         }
 
-        function openCategoryModal() { document.getElementById('newCategoryName').value = ''; document.getElementById('modalOverlay').style.display = 'block'; document.getElementById('categoryModal').style.display = 'block'; }
+        function openCategoryModal() { 
+            document.getElementById('newCategoryName').value = ''; 
+            document.getElementById('modalOverlay').style.display = 'block'; 
+            document.getElementById('categoryModal').style.display = 'block'; 
+            renderFolderListInModal();
+        }
+        
         function closeCategoryModal() { document.getElementById('modalOverlay').style.display = 'none'; document.getElementById('categoryModal').style.display = 'none'; }
 
         function saveNewCategory() {
             const name = document.getElementById('newCategoryName').value.trim(); const color = document.getElementById('newCategoryColor').value;
             if (!name) return alert('Enter a folder name.');
-            categories.push({ id: 'cat_' + Date.now(), name, color }); saveToStore(); renderCategories(); closeCategoryModal();
+            categories.push({ id: 'cat_' + Date.now(), name, color }); 
+            saveToStore(); renderCategories(); renderFolderListInModal();
+            document.getElementById('newCategoryName').value = '';
+        }
+
+        function renderFolderListInModal() {
+            const listDiv = document.getElementById('modalFolderList');
+            const deletable = categories.filter(c => c.id !== 'all' && c.id !== 'unfiled');
+            if (deletable.length === 0) {
+                listDiv.innerHTML = '<p style="font-size:0.85rem; color:#999;">No custom folders yet.</p>'; return;
+            }
+            listDiv.innerHTML = deletable.map(c => `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:6px; background:var(--bg); border-radius:6px; border:1px solid var(--border);">
+                    <span style="color:${c.color}; font-weight:bold; font-size:0.9rem;">● ${c.name}</span>
+                    <button class="btn" style="padding:2px 8px; font-size:0.75rem; background:#ffedea; color:#d9383a; border-color:#ffd1cc;" onclick="deleteCategory('${c.id}')">Delete</button>
+                </div>
+            `).join('');
+        }
+
+        function deleteCategory(catId) {
+            if (confirm('Delete this folder? Notes inside will move to General.')) {
+                notes.forEach(n => { if (n.categoryId === catId) n.categoryId = 'unfiled'; });
+                categories = categories.filter(c => c.id !== catId);
+                if (activeCategory === catId) activeCategory = 'all';
+                saveToStore(); renderCategories(); renderNotes(); renderFolderListInModal();
+            }
         }
 
         function saveToStore() { localStorage.setItem('my_notes_data', JSON.stringify(notes)); localStorage.setItem('my_notes_categories', JSON.stringify(categories)); }
