@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Notes</title>
+    <!-- Import beautiful, distinct Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Playfair+Display:ital,wght@0,600;1,600&family=Special+Elite&family=Outfit:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #fcf9f2; --card: #fff; --text: #2c2520; --border: #e6dfd5; --accent: #8c7863; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body { background: var(--bg); color: var(--text); padding: 16px; max-width: 600px; margin: 0 auto; padding-bottom: 90px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); padding: 16px; max-width: 600px; margin: 0 auto; padding-bottom: 90px; font-family: 'Outfit', sans-serif; }
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
         h1 { font-size: 1.8rem; color: var(--accent); font-weight: 700; }
         .category-container { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 16px; scrollbar-width: none; }
@@ -18,7 +20,7 @@
         .notes-list { display: flex; flex-direction: column; gap: 12px; }
         .note-card { background: var(--card); border-radius: 12px; padding: 16px; border-left: 6px solid var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,0.03); cursor: pointer; }
         .note-card h3 { font-size: 1.1rem; margin-bottom: 6px; }
-        .note-card p { font-size: 0.95rem; color: #666; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; }
+        .note-card p { font-size: 0.95rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; }
         .note-meta { margin-top: 10px; font-size: 0.8rem; color: #999; display: flex; justify-content: space-between; }
         .fab { position: fixed; bottom: 24px; right: 24px; background: var(--accent); color: white; width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer; z-index: 10; }
         .editor-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); z-index: 20; display: none; flex-direction: column; padding: 16px; }
@@ -29,7 +31,7 @@
         .editor-title { width: 100%; border: none; background: transparent; font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; outline: none; }
         .toolbar { display: flex; gap: 6px; flex-wrap: wrap; background: var(--card); padding: 6px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 12px; align-items: center; }
         .toolbar button, .toolbar select { padding: 6px 10px; border: 1px solid var(--border); background: var(--bg); border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: bold; }
-        .editor-content { flex-grow: 1; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; outline: none; overflow-y: auto; font-size: 1rem; line-height: 1.5; }
+        .editor-content { flex-grow: 1; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; outline: none; overflow-y: auto; line-height: 1.5; }
         .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; z-index: 30; display: none; width: 90%; max-width: 400px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); z-index: 25; display: none; }
         .input-field { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; margin: 8px 0 16px 0; outline: none; }
@@ -59,21 +61,31 @@
             <label style="font-size: 0.85rem; color: #666; font-weight: 600;">Folder:</label>
             <select id="noteCategory" style="padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); outline: none;"></select>
         </div>
+        
+        <!-- Whole Note Customization Toolbar -->
         <div class="toolbar">
             <button onclick="format('bold')">B</button>
             <button onclick="format('underline')"><u>U</u></button>
-            <select onchange="format('fontName', this.value)">
-                <option value="sans-serif">Modern</option>
-                <option value="serif">Classic</option>
-                <option value="monospace">Typewriter</option>
-                <option value="cursive">Cursive</option>
+            
+            <select id="noteFont" onchange="applyNoteStyle()">
+                <option value="'Outfit', sans-serif">Modern</option>
+                <option value="'Playfair Display', serif">Classic Serif</option>
+                <option value="'Special Elite', monospace">Typewriter 🎵</option>
+                <option value="'Caveat', cursive">Handwriting</option>
             </select>
-            <select onchange="format('fontSize', this.value)">
-                <option value="3">Normal</option>
-                <option value="4">Large</option>
-                <option value="5">Huge</option>
+            <select id="noteSize" onchange="applyNoteStyle()">
+                <option value="15px">Small</option>
+                <option value="18px">Normal</option>
+                <option value="22px">Large</option>
+                <option value="28px">Huge</option>
             </select>
-            <input type="color" onchange="format('foreColor', this.value)" style="width: 32px; height: 32px; padding: 0; border: none; background: none; cursor: pointer;">
+            <select id="noteColor" onchange="applyNoteStyle()">
+                <option value="#2c2520">Dark Brown</option>
+                <option value="#1e4620">Forest Green</option>
+                <option value="#0f3057">Deep Blue</option>
+                <option value="#8b1014">Warm Red</option>
+                <option value="#4a154b">Cozy Purple</option>
+            </select>
         </div>
         <div id="noteContent" class="editor-content" contenteditable="true" placeholder="Start writing..."></div>
     </div>
@@ -139,36 +151,82 @@
                 card.onclick = () => openNoteForEditing(note.id);
                 const temp = document.createElement('div'); temp.innerHTML = note.content;
                 const preview = temp.innerText || temp.textContent || 'Empty note...';
-                card.innerHTML = `<h3 style="color: ${folder.color}">${note.title}</h3><p>${preview}</p><div class="note-meta"><span>Updated: ${note.updatedAt}</span></div>`;
+                
+                // Card text adopts the note's customized font & color style for beautiful previews!
+                const cardFont = note.font || "'Outfit', sans-serif";
+                const cardColor = note.color || '#2c2520';
+
+                card.innerHTML = `
+                    <h3 style="color: ${folder.color}">${note.title}</h3>
+                    <p style="font-family: ${cardFont}; color: ${cardColor};">${preview}</p>
+                    <div class="note-meta"><span>Updated: ${note.updatedAt}</span></div>`;
                 list.appendChild(card);
             });
         }
 
         function createNewNote() {
-            currentNoteId = null; document.getElementById('noteTitle').value = ''; document.getElementById('noteContent').innerHTML = '';
+            currentNoteId = null; 
+            document.getElementById('noteTitle').value = ''; 
+            document.getElementById('noteContent').innerHTML = '';
             document.getElementById('noteCategory').value = activeCategory === 'all' ? 'unfiled' : activeCategory;
-            document.getElementById('deleteBtn').style.display = 'none'; document.getElementById('editorScreen').style.display = 'flex';
+            
+            // Set defaults in toolbar
+            document.getElementById('noteFont').value = "'Outfit', sans-serif";
+            document.getElementById('noteSize').value = "18px";
+            document.getElementById('noteColor').value = "#2c2520";
+            applyNoteStyle();
+
+            document.getElementById('deleteBtn').style.display = 'none'; 
+            document.getElementById('editorScreen').style.display = 'flex';
         }
 
         function openNoteForEditing(id) {
             currentNoteId = id; const note = notes.find(n => n.id === id);
             if (note) {
-                document.getElementById('noteTitle').value = note.title; document.getElementById('noteContent').innerHTML = note.content;
+                document.getElementById('noteTitle').value = note.title; 
+                document.getElementById('noteContent').innerHTML = note.content;
                 document.getElementById('noteCategory').value = note.categoryId;
-                document.getElementById('deleteBtn').style.display = 'inline-block'; document.getElementById('editorScreen').style.display = 'flex';
+                
+                // Load note's saved style, or use defaults
+                document.getElementById('noteFont').value = note.font || "'Outfit', sans-serif";
+                document.getElementById('noteSize').value = note.size || "18px";
+                document.getElementById('noteColor').value = note.color || "#2c2520";
+                applyNoteStyle();
+
+                document.getElementById('deleteBtn').style.display = 'inline-block'; 
+                document.getElementById('editorScreen').style.display = 'flex';
             }
+        }
+
+        // Live update the text area look based on toolbar selection
+        function applyNoteStyle() {
+            const font = document.getElementById('noteFont').value;
+            const size = document.getElementById('noteSize').value;
+            const color = document.getElementById('noteColor').value;
+            const contentDiv = document.getElementById('noteContent');
+            
+            contentDiv.style.fontFamily = font;
+            contentDiv.style.fontSize = size;
+            contentDiv.style.color = color;
         }
 
         function saveNote() {
             const title = document.getElementById('noteTitle').value.trim() || 'Untitled Note';
             const content = document.getElementById('noteContent').innerHTML;
             const categoryId = document.getElementById('noteCategory').value;
+            const font = document.getElementById('noteFont').value;
+            const size = document.getElementById('noteSize').value;
+            const color = document.getElementById('noteColor').value;
             const ts = new Date().toLocaleString([], {hour: '2-digit', minute:'2-digit', month:'short', day:'numeric'});
+            
             if (currentNoteId) {
                 const n = notes.find(x => x.id === currentNoteId);
-                if (n) { n.title = title; n.content = content; n.categoryId = categoryId; n.updatedAt = ts; }
+                if (n) { 
+                    n.title = title; n.content = content; n.categoryId = categoryId; n.updatedAt = ts; 
+                    n.font = font; n.size = size; n.color = color;
+                }
             } else {
-                notes.unshift({ id: Date.now().toString(), title, content, categoryId, updatedAt: ts });
+                notes.unshift({ id: Date.now().toString(), title, content, categoryId, updatedAt: ts, font, size, color });
             }
             saveToStore(); renderNotes(); closeEditor();
         }
@@ -193,7 +251,6 @@
             document.getElementById('categoryModal').style.display = 'block'; 
             renderFolderListInModal();
         }
-        
         function closeCategoryModal() { document.getElementById('modalOverlay').style.display = 'none'; document.getElementById('categoryModal').style.display = 'none'; }
 
         function saveNewCategory() {
